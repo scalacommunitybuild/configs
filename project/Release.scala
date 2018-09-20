@@ -67,7 +67,10 @@ object Release extends AutoPlugin {
     val org = x.get(organization).replaceAll("\\.", "\\.")
     val dep = s"""libraryDependencies \\+= "$org" %% ".+" % "(.+)"""".r
     val src = x.get(readmeFileSource)
-    val updated = IO.read(src).lines.map {
+    // JDK 11: work around https://github.com/scala/bug/issues/11125
+    // without incurring a deprecation warning. original code:
+    // val updated = IO.read(src).lines.map {
+    val updated = IO.read(src).linesWithSeparators.map(_.stripLineEnd).map {
       case line@dep(ver) => line.replace(ver, releaseVer)
       case line => line
     }.mkString("", "\n", "\n")
